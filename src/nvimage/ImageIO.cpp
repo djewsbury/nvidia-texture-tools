@@ -1927,6 +1927,10 @@ FloatImage * nv::ImageIO::loadFloat(const char * fileName, Stream & s)
         else s.seek(spos);
     }
 
+        // attempt to load via STB as a floating point image
+    auto t = loadFloatSTB(s);
+    if (t) return t;
+
     // Try to load as an RGBA8 image and convert to float.
     AutoPtr<Image> img(load(fileName, s));
     if (img != NULL) {

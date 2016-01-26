@@ -532,6 +532,15 @@ int main(int argc, char *argv[])
                 {
                     inputOptions.setMipmapChannelData(image->channel(i), i, image->width(), image->height());
                 }*/
+
+                    // DavidJ -- hack to interleave float value components
+                    //      note this will leak!
+                float* temp = new float[image->width() * image->height() * 4];
+                for (unsigned c=0; c<image->width() * image->height() * 4; ++c) temp[c] = 1.f;
+                for (unsigned p=0; p<image->width() * image->height(); ++p)
+                    for (unsigned c=0; c<image->componentCount(); ++c)
+                        temp[p*4+c] = image->pixel(c, p);
+                inputOptions.setMipmapData(temp, image->width(), image->height());
             }
             else
             {
@@ -622,8 +631,13 @@ int main(int argc, char *argv[])
         }
         else {
             // @@ Edit this to choose the desired pixel format:
-            // compressionOptions.setPixelType(nvtt::PixelType_Float);
-            // compressionOptions.setPixelFormat(16, 16, 16, 16);
+            if (loadAsFloat) {
+                    // DavidJ -- force linear 16 bit floating point format for floating point
+                    //              input images! Without this, the system attempts to apply gamma correction
+                compressionOptions.setPixelType(nvtt::PixelType_Float);
+                compressionOptions.setPixelFormat(16, 16, 16, 16);
+                inputOptions.setGamma(1.f, 1.f);
+            }
             // compressionOptions.setPixelType(nvtt::PixelType_UnsignedNorm);
             // compressionOptions.setPixelFormat(16, 0, 0, 0);
 
