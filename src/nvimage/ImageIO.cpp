@@ -1394,6 +1394,13 @@ static long DLL_CALLCONV TellProc(fi_handle handle)
     return s->tell();
 }
 
+namespace nv { namespace ImageIO
+{
+    Image * loadFreeImage(FREE_IMAGE_FORMAT fif, Stream & s);
+    FloatImage * loadFloatFreeImage(FREE_IMAGE_FORMAT fif, Stream & s);
+    bool saveFreeImage(FREE_IMAGE_FORMAT fif, Stream & s, const Image * img, const char ** tags);
+    bool saveFloatFreeImage(FREE_IMAGE_FORMAT fif, Stream & s, const FloatImage * img, uint baseComponent, uint componentCount);
+}}
 
 Image * nv::ImageIO::loadFreeImage(FREE_IMAGE_FORMAT fif, Stream & s)
 {
@@ -1487,10 +1494,10 @@ FloatImage * nv::ImageIO::loadFloatFreeImage(FREE_IMAGE_FORMAT fif, Stream & s)
                 {
                     const Color32 * src = (const Color32 *)FreeImage_GetScanLine(bitmap, h - y - 1 );
 
-                    float * r = floatImage->scanline(y, 0);
-                    float * g = floatImage->scanline(y, 1);
-                    float * b = floatImage->scanline(y, 2);
-                    float * a = floatImage->scanline(y, 3);
+                    float * r = floatImage->scanline(0, y, 0);
+                    float * g = floatImage->scanline(1, y, 0);
+                    float * b = floatImage->scanline(2, y, 0);
+                    float * a = floatImage->scanline(3, y, 0);
 
                     for (int x=0; x < w; x++)
                     {
@@ -1512,7 +1519,7 @@ FloatImage * nv::ImageIO::loadFloatFreeImage(FREE_IMAGE_FORMAT fif, Stream & s)
             for (int y=0; y < h; y++)
             {
                 const float * src = (const float *)FreeImage_GetScanLine(bitmap, h - y - 1 );
-                float * dst = floatImage->scanline(y, 0);
+                float * dst = floatImage->scanline(0, y, 0);
 
                 for (int x=0; x < w; x++)
                 {
@@ -1526,7 +1533,7 @@ FloatImage * nv::ImageIO::loadFloatFreeImage(FREE_IMAGE_FORMAT fif, Stream & s)
             for (int y=0; y < h; y++)
             {
                 const uint16 * src = (const uint16 *)FreeImage_GetScanLine(bitmap, h - y - 1 );
-                float * dst = floatImage->scanline(y, 0);
+                float * dst = floatImage->scanline(0, y, 0);
 
                 for (int x=0; x < w; x++)
                 {
@@ -1541,8 +1548,8 @@ FloatImage * nv::ImageIO::loadFloatFreeImage(FREE_IMAGE_FORMAT fif, Stream & s)
             {
                 const FICOMPLEX * src = (const FICOMPLEX *)FreeImage_GetScanLine(bitmap, h - y - 1 );
 
-                float * dst_real = floatImage->scanline(y, 0);
-                float * dst_imag = floatImage->scanline(y, 1);
+                float * dst_real = floatImage->scanline(0, y, 0);
+                float * dst_imag = floatImage->scanline(1, y, 0);
 
                 for (int x=0; x < w; x++)
                 {
@@ -1558,9 +1565,9 @@ FloatImage * nv::ImageIO::loadFloatFreeImage(FREE_IMAGE_FORMAT fif, Stream & s)
             {
                 const FIRGBF * src = (const FIRGBF *)FreeImage_GetScanLine(bitmap, h - y - 1 );
 
-                float * dst_red = floatImage->scanline(y, 0);
-                float * dst_green = floatImage->scanline(y, 1);
-                float * dst_blue = floatImage->scanline(y, 2);
+                float * dst_red = floatImage->scanline(0, y, 0);
+                float * dst_green = floatImage->scanline(1, y, 0);
+                float * dst_blue = floatImage->scanline(2, y, 0);
 
                 for (int x=0; x < w; x++)
                 {
@@ -1577,10 +1584,10 @@ FloatImage * nv::ImageIO::loadFloatFreeImage(FREE_IMAGE_FORMAT fif, Stream & s)
             {
                 const FIRGBAF * src = (const FIRGBAF *)FreeImage_GetScanLine(bitmap, h - y - 1 );
 
-                float * dst_red = floatImage->scanline(y, 0);
-                float * dst_green = floatImage->scanline(y, 1);
-                float * dst_blue = floatImage->scanline(y, 2);
-                float * dst_alpha = floatImage->scanline(y, 3);
+                float * dst_red = floatImage->scanline(0, y, 0);
+                float * dst_green = floatImage->scanline(1, y, 0);
+                float * dst_blue = floatImage->scanline(2, y, 0);
+                float * dst_alpha = floatImage->scanline(3, y, 0);
 
                 for (int x=0; x < w; x++)
                 {
@@ -1676,7 +1683,7 @@ bool nv::ImageIO::saveFloatFreeImage(FREE_IMAGE_FORMAT fif, Stream & s, const Fl
         {
             for (uint c = 0; c < componentCount; c++)
             {
-                scanline[x * componentCount + c] = img->pixel(x, y, baseComponent + c);
+                scanline[x * componentCount + c] = img->pixel(baseComponent + c, x, y, 0);
             }
         }
     }
